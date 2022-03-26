@@ -1,0 +1,11 @@
+{
+  "manifest_version": 3,
+  "version": "1.0",
+  "name": "One Click Morning",
+  "description": "One Click Morning is a chrome extension that allows you to set a tabs to be open for the morning.  Author : Masoud Naji ",
+  "action": {
+    "default_popup": "index.html",
+    "default_icon": "icon.png"
+  },
+  "permissions": ["tabs"]
+}
