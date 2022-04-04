@@ -12,6 +12,8 @@ const allTabsBtn = document.getElementById('all-tab-btn');
 const inputdetail = document.getElementById('input-detail');
 const AllTabsDetails = document.getElementById('AllTabs-details');
 const openBtn = document.getElementById('open-btn');
+const saveBtn = document.getElementById('save-btn');
+const saveCMD = document.getElementById('save-cmd');
 const infomessage = document.querySelector('.info-message');
 const themeBtn = document.querySelector('.likebtn');
 const root = document.documentElement;
@@ -64,20 +66,6 @@ time or its going to be a separate window. open in new window?
       <button type="button" id="open-no-btn">No</button>
 `;
     return;
-    // for (let i = 0; i < alltabs.length; i++) {
-    //   let w = window.open(
-    //     '',
-    //     `_blank`,
-    //     'toolbar=yes,scrollbars=yes,resizable=yes,top=500,left=500,width=800,height=600'
-    //   );
-    //   setTimeout(function () {
-    //     wo(w);
-    //   }, 100);
-    //   const wo = (w) => {
-    //     w.location = alltabs[i];
-    //     w.focus();
-    //   };
-    // }
   } else if (alltabs.length === 0) {
     alert('No tabs to open');
     return;
@@ -113,6 +101,91 @@ infomessage.addEventListener('click', (event) => {
     return;
   }
 });
+// save JSON to  storage --------------------------------------------------
+saveBtn.addEventListener('click', () => {
+  //  make good json file
+  let obj = alltabs.reduce((acc, cur, i) => {
+    acc[i] = cur;
+    return acc;
+  }, {});
+  let myObject = Object.entries(obj).map((e) => ({
+    ['id']: e[0],
+    ['url']: e[1],
+  }));
+
+  let json = JSON.stringify(myObject);
+
+  json = [json];
+  let blob1 = new Blob(json, { type: 'text/plain;charset=utf-8' });
+  //Check the Browser.
+  let isIE = false || !!document.documentMode;
+  if (isIE) {
+    window.navigator.msSaveBlob(blob1, 'AllTabs.json');
+  } else {
+    let url = window.URL || window.webkitURL;
+    let link = url.createObjectURL(blob1);
+    let a = document.createElement('a');
+    a.download = 'AllTabs.json';
+    a.href = link;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+});
+////////////Create  cmd file ////
+saveCMD.addEventListener('click', () => {
+  infomessage.innerHTML = `
+  Cmd File can be harmful , but this cmd file is just made for opening all your list in one window.
+  <br/>Creating stand alone cmd file...  Countinue?
+  <button type="button" id="cmd-yes-btn" >Yes</button>
+  <button type="button" id="cmd-no-btn">No</button>
+  `;
+});
+
+infomessage.addEventListener('click', (event) => {
+  const isButton = event.target.nodeName === 'BUTTON';
+  if (!isButton) {
+    return;
+  }
+  const element = event.target.id;
+  if (element === 'cmd-yes-btn') {
+    cmdMaker();
+  } else if (element === 'cmd-no-btn') {
+    return;
+  }
+  renderInfo();
+  return;
+});
+
+const cmdMaker = () => {
+  let obj = alltabs.reduce((acc, cur, i) => {
+    acc[i] = cur;
+    return acc;
+  }, {});
+  let precmd =
+    '@echo off \n' +
+    'ECHO.---------------------------------\n' +
+    'ECHO.-----------Masoud Naji-----------\n' +
+    'ECHO.---https://www.masoudnaji.com/---\n' +
+    'ECHO.---------------------------------\n' +
+    'echo.\n' +
+    'echo.\n';
+  let aftercmd = '\necho All done';
+  const mmycmd = Object.entries(obj).map((e) => {
+    return `rundll32 url.dll,FileProtocolHandler ${e[1]}`;
+  });
+  const newMmycmd = mmycmd.toString().replace(/,(\s*)(?!F)/g, '\n');
+  let completecmd = precmd + newMmycmd + aftercmd;
+  console.log(completecmd);
+  console.log(typeof completecmd);
+
+  let linkcmd = document.createElement('a');
+  linkcmd.download = 'AllTabs.cmd';
+  let blob2 = new Blob([completecmd], { type: 'text/plain;charset=utf-8' });
+  let thisurl = window.URL || window.webkitURL;
+  linkcmd.href = thisurl.createObjectURL(blob2);
+  linkcmd.click();
+};
 
 // save one tap functions --------------------------------------------------
 tabBtn.addEventListener('click', function () {
