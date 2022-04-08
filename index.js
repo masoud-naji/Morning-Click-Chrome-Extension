@@ -30,6 +30,8 @@ themeBtn.addEventListener('change', (e) => {
 // let minecolor = getComputedStyle(document.documentElement).getPropertyValue('--main-Color');
 // console.log(minecolor);
 
+var d = new Date();
+var NoTimeDate = d.getFullYear() + '/' + (d.getMonth() + 1) + '/' + d.getDate();
 // Initial render --------------------------------------------------------------
 if (leadsFromLocalStorage) {
   myLeads = leadsFromLocalStorage;
@@ -162,17 +164,42 @@ const cmdMaker = () => {
     acc[i] = cur;
     return acc;
   }, {});
+  let alladdreses = Object.entries(obj).map((e) => {
+    return `echo.${e[0]} -" ${e[1]} "\n`;
+  });
+
   let precmd =
-    '@echo off \n' +
-    'ECHO.---------------------------------\n' +
-    'ECHO.-----------Masoud Naji-----------\n' +
-    'ECHO.---https://www.masoudnaji.com/---\n' +
-    'ECHO.---------------------------------\n' +
-    'echo.\n' +
-    'echo.\n';
-  let aftercmd = '\necho All done';
+    `@echo off \n` +
+    `echo.---------------------------------\n` +
+    `echo.-----------Masoud Naji-----------\n` +
+    `echo.---https://www.masoudnaji.com/---\n` +
+    `echo.---------------------------------\n` +
+    `echo/\n` +
+    `echo/ All Tab Are Going To Open\n` +
+    `${alladdreses}\n` +
+    `echo/\n` +
+    `if exist "%SystemRoot%System32choice.exe" goto UseChoice\n` +
+    `setlocal EnableExtensions EnableDelayedExpansion\n` +
+    `:UseSetPrompt\n` +
+    `set "UserChoice="\n` +
+    `set /P "UserChoice=Are you sure [Y/N]? "\n` +
+    `set "UserChoice=!UserChoice: =!"\n` +
+    `if /I "!UserChoice!" == "N" endlocal & goto :EOF\n` +
+    `if /I not "!UserChoice!" == "Y" goto UseSetPrompt\n` +
+    `endlocal\n` +
+    `goto Continue\n` +
+    `:UseChoice\n` +
+    `%SystemRoot%System32choice.exe /C YN /N /M "Are you sure [Y/N]?"\n` +
+    `if not errorlevel 1 goto UseChoice\n` +
+    `if errorlevel 2 goto :EOF\n` +
+    `:Continue\n` +
+    `echo So you are sure. Okay, lets go ...\n` +
+    `echo.\n` +
+    `echo.\n`;
+
+  let aftercmd = '\necho All done \n endlocal';
   const mmycmd = Object.entries(obj).map((e) => {
-    return `rundll32 url.dll,FileProtocolHandler ${e[1]}`;
+    return `rundll32 url.dll,FileProtocolHandler "${e[1]}"`;
   });
   const newMmycmd = mmycmd.toString().replace(/,(\s*)(?!F)/g, '\n');
   let completecmd = precmd + newMmycmd + aftercmd;
@@ -180,7 +207,7 @@ const cmdMaker = () => {
   console.log(typeof completecmd);
 
   let linkcmd = document.createElement('a');
-  linkcmd.download = 'AllTabs.cmd';
+  linkcmd.download = `AllTabs_${NoTimeDate}.cmd`;
   let blob2 = new Blob([completecmd], { type: 'text/plain;charset=utf-8' });
   let thisurl = window.URL || window.webkitURL;
   linkcmd.href = thisurl.createObjectURL(blob2);
